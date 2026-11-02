@@ -6,6 +6,7 @@ import { rerender } from './router.js';
 import { formatDate } from '../core/dates.js';
 import { sourceCoverage } from '../core/mapping.js';
 import { dayNumber } from '../data/scenarios.js';
+import { icon } from './icons.js';
 import { tr, tl } from '../i18n/i18n.js';
 
 // A tl() label "中文（English）" as Chinese plus a quieter English part; the text is unchanged.
@@ -50,8 +51,8 @@ export function filterBar({ channel = true, owner = true } = {}) {
   return bar;
 }
 
-export function tile({ label: lbl, value, delta, foot, hero = false, cls = '' }) {
-  return h('div', { class: `tile ${hero ? 'hero' : ''} ${cls}` }, t('div', lbl, 'label'), t('div', value, 'value'), delta ? h('div', { class: `delta ${delta.dir || ''}` }, delta.text) : null, foot ? t('div', foot, 'foot') : null);
+export function tile({ label: lbl, value, delta, foot, hero = false, cls = '', icon: ic = '', tone = '' }) {
+  return h('div', { class: `tile ${hero ? 'hero' : ''} ${tone ? 'tone-' + tone : ''} ${cls}` }, h('div', { class: 'tile-head' }, ic ? h('span', { class: 'tile-ico' }, icon(ic)) : null, t('div', lbl, 'label')), t('div', value, 'value'), delta ? h('div', { class: `delta ${delta.dir || ''}` }, delta.text) : null, foot ? t('div', foot, 'foot') : null);
 }
 
 export function statusChip(status) { return h('span', { class: `status ${status}` }, tr(status)); }
@@ -126,6 +127,20 @@ export function trendChart(trend, rd) {
     const lab = ns('text', { x: x + barW / 2, y: H - padB + 16, 'text-anchor': 'middle' }); lab.textContent = pt.month.slice(5) + '/' + pt.month.slice(2, 4) + (pt.partial ? '*' : ''); add(svg, lab);
   });
   add(wrap, svg, tip, t('div', tr('* partial month, up to {0}', formatDate(rd)), 'hint'));
+  return wrap;
+}
+
+// Order value per month as horizontal bars (the current month is hatched: it is partial).
+export function monthBars(trend, rd) {
+  const max = Math.max(1, ...trend.map(x => x.order_value));
+  const wrap = h('div', { class: 'mbars' });
+  for (const pt of trend) {
+    add(wrap, h('div', { class: 'mbar' },
+      t('span', pt.month.slice(5) + '/' + pt.month.slice(2, 4) + (pt.partial ? '*' : ''), 'mbar-m'),
+      h('div', { class: 'mbar-track', title: `${pt.month}: ${money(pt.order_value)}` }, h('div', { class: 'mbar-fill' + (pt.partial ? ' partial' : ''), style: `width:${(pt.order_value / max) * 100}%` })),
+      t('span', money(pt.order_value), 'mbar-v num')));
+  }
+  if (trend.some(x => x.partial)) add(wrap, t('div', tr('* partial month, up to {0}', formatDate(rd)), 'hint'));
   return wrap;
 }
 

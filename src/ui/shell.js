@@ -29,6 +29,7 @@ const PAGE_SHEET = { customers: 'Customers', payments: 'Payments', stock: 'Stock
 
 export function initShell() {
   const nav = $('#nav');
+  add(nav, h('div', { class: 'side-brand' }, h('span', { class: 'brand-mark', 'aria-hidden': 'true' }), h('div', { class: 'side-brand-text' }, h('span', { class: 'side-brand-name' }), h('span', { class: 'side-brand-sub' }))));
   for (const [id] of NAV) add(nav, h('a', { href: `#${id}`, 'data-page': id }, icon(id), h('span', { class: 'nav-label' }), id === 'tasks' ? h('span', { class: 'count', id: 'nav-tasks-count' }) : null));
   add(nav, h('div', { class: 'sidenav-foot small muted' }, icon('lock'), h('span', { id: 'nav-foot' })));
   // Small screens: the menu slides over the page; a backdrop click, a link or Escape closes it.
@@ -56,6 +57,8 @@ export function refreshShell() {
   $('#menu-toggle').setAttribute('aria-label', tr('Menu'));
   $('#nav').setAttribute('aria-label', tr('Sections'));
   $('#business-name').textContent = businessName();
+  $('.side-brand-name').textContent = businessName();
+  $('.side-brand-sub').textContent = tr('Your own Excel');
   renderRibbon();
   renderScenarioBar();
   for (const a of $('#nav').querySelectorAll('a[data-page]')) {
