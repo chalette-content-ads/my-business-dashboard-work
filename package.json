@@ -1,0 +1,23 @@
+{
+  "name": "business-dashboard-starter",
+  "version": "0.7.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Setup-free small-business dashboard starter: opens your own Excel workbook in the browser (other layouts are matched once). No accounts, no server, no built-in data; optional Gemini analysis with your own key.",
+  "scripts": {
+    "data": "node scripts/pack-data.js",
+    "vendor": "node scripts/vendor.js",
+    "dev": "node scripts/pack-data.js && node scripts/serve.js",
+    "test": "node --test \"test/*.test.js\"",
+    "build": "node scripts/pack-data.js && node scripts/build.js",
+    "check": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "read-excel-file": "9.3.10"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

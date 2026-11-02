@@ -1,0 +1,332 @@
+{
+  "$comment": "Business profile and column mapping for this training dataset. Adapted from config/examples/betterspace-b2c.setup-package.json in the original Business Dashboard template (Google source bindings, validation and confirmation fields removed). The reporting date is not set here: it comes from each day's metadata.json (as_of_date).",
+  "id": "betterspace-b2c",
+  "order": 1,
+  "business": {
+    "name": "BetterSpace Home & Desk",
+    "model": "b2c",
+    "industry": "Home and desk furniture sold on Shopee, Lazada and in a showroom",
+    "description": "B2C retailer selling chairs, desks, lamps and accessories through two marketplaces and a showroom. Synthetic training data.",
+    "team": [],
+    "timezone": "Asia/Kuala_Lumpur",
+    "currency": "MYR",
+    "currency_symbol": "RM",
+    "questions": [
+      "Which channel is selling this month compared with last month?",
+      "Which orders are late for delivery?",
+      "Which products are low on available stock?",
+      "Who are the repeat buyers this month?"
+    ],
+    "ai_guidance": "Speak to the owner. Marketplace checkout amounts are buyer payments, not seller payouts. Do not fabricate platform health metrics.",
+    "synthetic": true,
+    "name_zh": "BetterSpace 家居生活馆",
+    "short": "B2C home retail",
+    "short_zh": "B2C 家居零售",
+    "industry_zh": "家居与办公桌椅，在 Shopee、Lazada 和门市销售",
+    "description_zh": "B2C 零售商，通过两个电商平台和一间门市销售椅子、书桌、台灯和配件。虚构培训数据。"
+  },
+  "period": {
+    "history_start": "2026-06-01"
+  },
+  "labels": {
+    "customers": "Customers",
+    "customer": "Customer",
+    "sales": "Orders",
+    "sale": "Order",
+    "payments": "Payments",
+    "payment": "Payment",
+    "stock": "Stock",
+    "item": "Product",
+    "owner": "Owner",
+    "channel": "Channel"
+  },
+  "labels_zh": {
+    "customers": "客户",
+    "customer": "客户",
+    "sales": "订单",
+    "sale": "订单",
+    "payments": "收款",
+    "payment": "收款",
+    "stock": "库存",
+    "item": "产品",
+    "owner": "负责人",
+    "channel": "渠道"
+  },
+  "status_map": {
+    "pending": [
+      "Confirmed",
+      "In Progress"
+    ],
+    "done": [
+      "Completed"
+    ],
+    "excluded": [
+      "Cancelled"
+    ]
+  },
+  "policies": {
+    "dates": {
+      "order": "dmy"
+    },
+    "tasks": [
+      {
+        "rule": "payment_follow_up",
+        "enabled": true,
+        "params": {
+          "offset_days": 1
+        }
+      },
+      {
+        "rule": "follow_up_due",
+        "enabled": false,
+        "note": "B2C accounts have no follow-up field"
+      },
+      {
+        "rule": "review_account",
+        "enabled": false,
+        "note": "Shoppers without orders are not reviewed"
+      },
+      {
+        "rule": "review_replenishment",
+        "enabled": true
+      },
+      {
+        "rule": "completion_overdue",
+        "enabled": true,
+        "note": "Prepaid marketplace orders still need delivery confirmation"
+      },
+      {
+        "rule": "completion_due_soon",
+        "enabled": true,
+        "params": {
+          "within_days": 2
+        }
+      },
+      {
+        "rule": "unassigned_prospect",
+        "enabled": false
+      }
+    ]
+  },
+  "meanings": [
+    {
+      "id": "M1",
+      "field": "customers.type",
+      "meaning": "All B2C accounts are recorded as Customer; there is no prospect concept.",
+      "basis": "documented"
+    },
+    {
+      "id": "M8",
+      "field": "sales.amount",
+      "meaning": "Booked order value excluding tax; marketplace checkout money is not the seller payout.",
+      "basis": "confirmed"
+    },
+    {
+      "id": "M13",
+      "field": "stock.reserved",
+      "meaning": "Product-level reservations shared across Shopee, Lazada and showroom.",
+      "basis": "confirmed"
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "customers",
+      "entity": "customers",
+      "file": "Customers.csv",
+      "sheet_name": "Customers",
+      "header_row": 1,
+      "row_meaning": "One row is one shopper account",
+      "identity": {
+        "mode": "source_id",
+        "field": "customer_id"
+      },
+      "fields": [
+        {
+          "canonical": "id",
+          "header": "customer_id"
+        },
+        {
+          "canonical": "name",
+          "header": "customer_name"
+        },
+        {
+          "canonical": "type",
+          "header": "customer_type",
+          "values": {
+            "customer": [
+              "Customer"
+            ],
+            "prospect": [
+              "Prospect"
+            ]
+          }
+        },
+        {
+          "canonical": "contact",
+          "header": "contact_details"
+        },
+        {
+          "canonical": "created_date",
+          "header": "created_date",
+          "note": "Date the account was added, not first purchase"
+        },
+        {
+          "canonical": "notes",
+          "header": "notes"
+        }
+      ]
+    },
+    {
+      "table_id": "sales",
+      "entity": "sales",
+      "file": "Sales.csv",
+      "sheet_name": "Sales",
+      "header_row": 1,
+      "row_meaning": "One row is one order or job containing one offering",
+      "identity": {
+        "mode": "source_id",
+        "field": "sale_id"
+      },
+      "fields": [
+        {
+          "canonical": "id",
+          "header": "sale_id"
+        },
+        {
+          "canonical": "customer_id",
+          "header": "customer_id"
+        },
+        {
+          "canonical": "date",
+          "header": "sale_date"
+        },
+        {
+          "canonical": "item_id",
+          "header": "item_id"
+        },
+        {
+          "canonical": "description",
+          "header": "description"
+        },
+        {
+          "canonical": "offering_type",
+          "header": "offering_type",
+          "values": {
+            "product": [
+              "Product"
+            ],
+            "service": [
+              "Service"
+            ]
+          }
+        },
+        {
+          "canonical": "quantity",
+          "header": "quantity"
+        },
+        {
+          "canonical": "unit_price",
+          "header": "unit_price"
+        },
+        {
+          "canonical": "amount",
+          "header": "total_amount",
+          "note": "Booked order value excluding tax; not revenue or profit"
+        },
+        {
+          "canonical": "channel",
+          "header": "sales_channel"
+        },
+        {
+          "canonical": "status",
+          "header": "status"
+        },
+        {
+          "canonical": "payment_due_date",
+          "header": "payment_due_date"
+        },
+        {
+          "canonical": "promised_completion_date",
+          "header": "promised_completion_date"
+        },
+        {
+          "canonical": "actual_completion_date",
+          "header": "actual_completion_date"
+        }
+      ]
+    },
+    {
+      "table_id": "payments",
+      "entity": "payments",
+      "file": "Payments.csv",
+      "sheet_name": "Payments",
+      "header_row": 1,
+      "row_meaning": "One row is one bank receipt against one sale; a sale may have several",
+      "identity": {
+        "mode": "source_id",
+        "field": "payment_id"
+      },
+      "fields": [
+        {
+          "canonical": "id",
+          "header": "payment_id"
+        },
+        {
+          "canonical": "sale_id",
+          "header": "sale_id"
+        },
+        {
+          "canonical": "date",
+          "header": "payment_date"
+        },
+        {
+          "canonical": "amount",
+          "header": "amount"
+        },
+        {
+          "canonical": "method",
+          "header": "payment_method"
+        }
+      ]
+    },
+    {
+      "table_id": "stock",
+      "entity": "stock",
+      "file": "Stock.csv",
+      "sheet_name": "Stock",
+      "header_row": 1,
+      "row_meaning": "One row is one product's snapshot on the reporting date, shared across channels",
+      "identity": {
+        "mode": "source_id",
+        "field": "item_id"
+      },
+      "fields": [
+        {
+          "canonical": "id",
+          "header": "item_id"
+        },
+        {
+          "canonical": "name",
+          "header": "item_name"
+        },
+        {
+          "canonical": "snapshot_date",
+          "header": "snapshot_date"
+        },
+        {
+          "canonical": "on_hand",
+          "header": "on_hand_quantity"
+        },
+        {
+          "canonical": "reserved",
+          "header": "reserved_quantity",
+          "note": "Product-level total, not allocated to specific orders"
+        },
+        {
+          "canonical": "reorder_threshold",
+          "header": "reorder_threshold"
+        }
+      ]
+    }
+  ]
+}
